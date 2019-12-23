@@ -1,0 +1,88 @@
+@page {
+    size: A3 landscape
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+}
+
+
+@keyframes dadis-tooltip-show {
+    from {opacity: 0;}
+    to {opacity: 2;}
+  }
+
+.dadis-tooltip {
+    max-width:800px;
+    text-align: left;
+    display: none;
+    background-color: black;
+    color: #fff;
+    border-radius: 6px;
+    padding: 5px 5px;
+    position: absolute;
+    z-index: 1;
+    animation-name: dadis-tooltip-show;
+    animation-duration: 0.5s;
+    font-size: small;
+}
+
+.dadis-container {
+    position: absolute;
+    margin: 0 auto;
+    padding: 0;
+    display: table; 
+    width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.panel {
+    box-sizing: border-box;
+    padding: 5px;
+    display: table-cell;
+}
+
+.mid-panel {
+    width: auto;
+}
+
+.left-panel {
+    width: 320px;
+    font-size: smaller;
+    vertical-align: top;
+}
+
+.right-panel {
+    width: 70px;
+    vertical-align: top;
+}
+
+svg {
+    margin: 0 auto;
+    width: 100%;
+    border: 1px solid rgb(196, 201, 206);
+    box-sizing: border-box;
+}
+
+svg text {
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input,
+select {
+    width: 95%;
+    box-sizing: border-box;
+
+}
+
+.panel-item {
+
+    margin-bottom: 40px;
+}
