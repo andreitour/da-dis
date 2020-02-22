@@ -87,17 +87,14 @@ function mid2vd(mid,vd) {
     for(var type in vd.type) {
         for(var i=0;i<vd.type[type].all.length;i++) {
             var el = vd.el[vd.type[type].all[i]];
-            var name,cs; 
+            var name; 
             if(el.out["assigned to"] && el.out["assigned to"]["configuration state"] &&
                 el.out["part of"] && el.out["part of"][el.type] ) {
                 // instance element
                 var classEl = vd.el[ el.out["part of"][el.type].all[0]];
                 name = classEl.name;
-                cs = vd.el[el.out["assigned to"]["configuration state"].all[0]];
-                if(!vd.type[type].inst[name]) { vd.type[type].inst[name] = {}};
-                if(!vd.type[type].inst[name][cs.name]) {vd.type[type].inst[name][cs.name] = []};
-                vd.type[type].inst[name][cs.name].push(el.id);
-                el.cs = cs.id;
+                if(!vd.type[type].inst[name]) { vd.type[type].inst[name] = []};
+                vd.type[type].inst[name].push(el.id);
             } else {
                 // core class element
                 name = el.name; 
@@ -189,9 +186,18 @@ function getCsOptionsByClass(instTypeNameSel,clNameSel,vd) {
     var options = ["All"];
     for(var clName in vd.type[instTypeNameSel].inst) {
         if(clName==clNameSel || clNameSel=="All") {
-            for(var csName in vd.type[instTypeNameSel].inst[clName]) {
-                if(options.indexOf(csName)<0) {
-                    options.push(csName);
+            var instIds = vd.type[instTypeNameSel].inst[clName];
+            for(var i=0;i<instIds.length;i++) {
+                var instId = instIds[i];
+                var inst = vd.el[instId];
+                if (inst.out["assigned to"]["configuration state"]) {
+                    for(var j=0;j<inst.out["assigned to"]["configuration state"].all.length;j++) {
+                        var instCsId = inst.out["assigned to"]["configuration state"].all[j];
+                        var instCs = vd.el[instCsId];
+                        if(options.indexOf(instCs.name)<0) {
+                            options.push(instCs.name);
+                        }
+                    }
                 }
             }
         }
@@ -202,15 +208,31 @@ function getCsOptionsByClass(instTypeNameSel,clNameSel,vd) {
 function getPlaceOptionsByClassAndCs(instTypeNameSel,clNameSel,csNameSel,vd) {
     var options = {All:{inst:[]}};
     for(var clName in vd.type[instTypeNameSel].inst) {
-        for(var csName in vd.type[instTypeNameSel].inst[clName]) {
-            if((clNameSel=="All" || clNameSel==clName) && (csNameSel=="All" || csNameSel==csName)) {
-                // instances should be selected
-                var instIds = vd.type[instTypeNameSel].inst[clName][csName];
-                for(var i=0;i<instIds.length;i++) {
-                    var instEl = vd.el[instIds[i]];
-                    updatePlaceOptionsByInst(clName,csName,instEl,"node",options,vd);
-                    updatePlaceOptionsByInst(clName,csName,instEl,"link",options,vd);
-                    updatePlaceOptionsByInst(clName,csName,instEl,"topology",options,vd);
+        if(clNameSel=="All" || clNameSel==clName) {
+            // instances should be selected
+            var instIds = vd.type[instTypeNameSel].inst[clName];
+            for(var i=0;i<instIds.length;i++) {
+                var instEl = vd.el[instIds[i]];
+                if(instEl.out["assigned to"]["configuration state"]) {
+                    var instHasCsNameSel = false;
+                    if (csNameSel=="All") {
+                        instHasCsNameSel = true;
+                    } else {
+                        // look through names of all configuration states assigned to the instance
+                        for(var j=0;j<instEl.out["assigned to"]["configuration state"].all.length;j++) {
+                            var csId = instEl.out["assigned to"]["configuration state"].all[j];
+                            var cs = vd.el[csId];
+                            if(cs.name==csNameSel) {
+                                instHasCsNameSel = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(instHasCsNameSel) {
+                        updatePlaceOptionsByInst(clName,instEl,"node",options,vd);
+                        updatePlaceOptionsByInst(clName,instEl,"link",options,vd);
+                        updatePlaceOptionsByInst(clName,instEl,"topology",options,vd);
+                    }
                 }
             }
         }
@@ -218,7 +240,7 @@ function getPlaceOptionsByClassAndCs(instTypeNameSel,clNameSel,csNameSel,vd) {
     return options;
 };
 
-function updatePlaceOptionsByInst(clName,csName,instEl,placeType,options,vd) {
+function updatePlaceOptionsByInst(clName,instEl,placeType,options,vd) {
         if(instEl.out["assigned to"][placeType]) {
             var placeIds = instEl.out["assigned to"][placeType].all;
             for(var j=0;j<placeIds.length;j++) {
@@ -232,8 +254,7 @@ function updatePlaceOptionsByInst(clName,csName,instEl,placeType,options,vd) {
                 var instProxy = {
                     instId: instEl.id,
                     type: instEl.type,
-                    coreName: clName,
-                    csName: csName
+                    coreName: clName
                 };
                 options[placeEl.name].inst.push(instProxy);
                 options.All.inst.push(instProxy);

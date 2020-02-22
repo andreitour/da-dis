@@ -192,7 +192,11 @@ function updateTag(view, gSel,_app) {
             if( selectedPlaceName==placeName || selectedPlaceName=="All") {
                 var pProxy = instPlaceProxies[placeName];
                 var pEl = _app.vd.el[pProxy.placeId];
-                instCount += instPlaceProxies[placeName].inst.length;
+                for(var i=0;i<instPlaceProxies[placeName].inst.length;i++) {
+                    var instId = instPlaceProxies[placeName].inst[i].instId;
+                    var instEl = _app.vd.el[instId];
+                    instCount += instEl.out["assigned to"]["configuration state"].all.length;    
+                }
             }
         }
         tag = instCount;
@@ -358,12 +362,15 @@ function updateDetails(view, gSel,_app) {
                     var instProxy = pProxy.inst[i];
                     var instEl = _app.vd.el[instProxy.instId];
                     if(!details) {
-                        details = "Data at "+gType+" '"+gName+"':<br>";
+                        details = "Data at "+gType+" '"+gName+"'<br>";
                     }
-                    if(i==0) {
-                        details += (pEl.type + " " + pEl.name + " measures:<br>");
+                    var instCsNames = [];
+                    for(var j=0;j<instEl.out["assigned to"]["configuration state"].all.length;j++) {
+                        var csId = instEl.out["assigned to"]["configuration state"].all[j];
+                        var cs = _app.vd.el[csId];
+                        instCsNames.push(cs.name);
                     }
-                    details += ("    " + instProxy.type + " '" + instProxy.coreName + "' tags: " + JSON.stringify(instEl.tag)+";<br>");
+                    details += ("<br>    " + instProxy.type + " '" + instProxy.coreName + "'<br>    tags: " + JSON.stringify(instEl.tag)+"<br>    cs: "+JSON.stringify(instCsNames)+"<br>");
                     if(i==(pProxy.inst.length-1)) {
                         details += "<br>";
                     }
