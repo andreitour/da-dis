@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Configuration State Visualizations - Services</title>
+    <link rel="stylesheet" href="lib/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="lib/paper-css/0.4.1/paper.css">
+    <link rel="stylesheet" href="lib/da-dis/0.7.6/da-dis.css">
+</head>
+
+<body class="A3 landscape">
+    <script>
+        var notSupportedBrowser = null;
+        if(navigator.userAgent.indexOf('MSIE')!==-1 || navigator.appVersion.indexOf('Trident/') > -1){
+            /* Microsoft Internet Explorer detected . */
+            notSupportedBrowser = "Microsoft Internet Explorer";
+        } 
+        if(notSupportedBrowser) {
+            alert("You are using "+notSupportedBrowser+".\nThis browser is not supported. Please use another one.");
+        }
+
+    </script>
+
+    <section id="app">
+        <div v-if="!viewFrame.activeViewName">Loading...</div>
+        <div class="dadis-tooltip" style="display:none"> 
+        </div>
+        <div id="print-section" style="visibility:hidden">
+            <div class="sheet padding-0mm svg-container">
+
+            </div>
+        </div>
+        <div id="main-section" class="dadis-container" style="visibility:hidden">
+            <div class="panel left-panel">
+                <div class="panel-item">
+                    <label>View ({{selectionOptions.viewName.length}}) :</label>
+                    <select v-model="selection.viewName" v-on:change="onViewChange($event)">
+                        <option v-for="item in selectionOptions.viewName">
+                            {{ item }}
+                        </option>
+                    </select>
+                </div>
+                <div class="panel-item" v-if="selectionOptions.instTypeName.length>0">
+                    <label>Type ({{selectionOptions.instTypeName.length}}) :</label>
+                    <select v-model="selection.filter.instTypeName" v-on:change="onFilterChange($event)">
+                        <option v-for="item in selectionOptions.instTypeName">
+                            {{ item }}
+                        </option>
+                    </select>
+                </div>
+                <div class="panel-item" v-if="selectionOptions.instClassName.length>0">
+                    <label>Core {{selection.filter.instTypeName}} element ({{selectionOptions.instClassName.length}}) :</label>
+                    <select v-model="selection.filter.instClassName" v-on:change="onFilterChange($event)">
+                        <option v-for="item in selectionOptions.instClassName">
+                            {{ item }}
+                        </option>
+                    </select>
+                </div>
+                <div class="panel-item" v-if="selectionOptions.instCsName.length>0">
+                    <label>Configuration State ({{selectionOptions.instCsName.length}}) :</label>
+                    <select v-model="selection.filter.instCsName" v-on:change="onFilterChange($event)">
+                        <option v-for="item in selectionOptions.instCsName">
+                            {{ item }}
+                        </option>
+                    </select>
+                </div>
+                <div class="panel-item">
+                        <label>Places ({{Object.keys(selectionOptions.instPlaceName).length}}) :</label>
+                        <select v-model="selection.filter.instPlaceName" v-on:change="onPlaceChange($event)">
+                            <option v-for="(value,name) in selectionOptions.instPlaceName">
+                                {{ name }}
+                            </option>                        
+                        </select>
+                </div>
+            </div>
+            <div class="panel mid-panel svg-container">
+
+            </div>
+            <div class="panel right-panel">
+                <button type="button" v-on:click="onPrint">Print...</button>
+            </div>
+        </div>
+    </section>
+
+    <script src="lib/vue/2.6.11/vue.min.js"></script>
+    <script src="lib/d3/5.14.2/d3.v5.min.js"></script>
+    <script src="lib/da-dis/0.7.6/da-dis-data.js"></script>
+    <script src="lib/da-dis/0.7.6/da-dis-svg.js"></script>
+    <script src="lib/da-dis/0.7.6/da-dis-smv.js"></script>
+
+    <script>
+        var _config = {
+            ns: "travis",            
+            dataVer: "2.0.0",
+            views: {
+                "AM Peak Metro Services (TpH/Up)": new SvgMapInstView("moe","Number of Metropolitan Services per hour - Core","Configuration State 2020",updateTagSimpleText,updateDetailsNone),
+                "PM Peak Metro Services (TpH/Dn)": new SvgMapInstView("moe","Number of Metropolitan Services per hour - Core","Configuration State 2020",updateTagSimpleText,updateDetailsNone),
+                "AM Peak Regional Services (TpH/Up)": new SvgMapInstView("moe","Number of Regional Services per hour - Core","Configuration State 2020",updateTagSimpleText,updateDetailsNone),
+                "PM Peak Regional Services (TpH/Dn)": new SvgMapInstView("moe","Number of Regional Services per hour - Core","Configuration State 2020",updateTagSimpleText,updateDetailsNone),
+                "Regional Services per Day (TpD/Up)": new SvgMapInstView("moe","Number of Regional Services per day - Core","Configuration State 2020",updateTagSimpleText,updateDetailsNone)
+            }
+        }
+    </script>
+
+    <script>
+        function getTagContent(viewName,gName,placeName,instEl) {
+            var tag = "";
+            var t = instEl.tag;
+            switch(viewName) {
+                case "AM Peak Metro Services (TpH/Up)": 
+                case "AM Peak Regional Services (TpH/Up)": 
+                    {
+                        if(t["dir"].toUpperCase()=="UP" && t["tod"]=="AM Peak") {
+                            tag = t["target value"];
+                        }
+                    }
+                    break;
+                case "PM Peak Metro Services (TpH/Dn)": 
+                case "PM Peak Regional Services (TpH/Dn)": 
+                    {
+                        if(t["dir"].toUpperCase()=="DOWN" && t["tod"]=="PM Peak") {
+                            tag = t["target value"];
+                        }
+                    }
+                    break;
+                case "Regional Services per Day (TpD/Up)": 
+                    {
+                        if(t["dir"].toUpperCase()=="UP") {
+                            tag = t["target value"];
+                        }
+                    }
+                    break;
+                default:
+                    // do nothing
+            }
+
+            return tag;
+        };    
+    </script>
+
+
+
+
+<script src="lib/da-dis/0.7.6/da-dis-app.js"></script>
+
+</body>
+
+</html>
